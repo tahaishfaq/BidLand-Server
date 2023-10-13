@@ -11,7 +11,7 @@
   app.use(express.json());
   
   // Connect to MongoDB
-  mongoose.connect('mongodb+srv://bidland:123@user.te2zh0j.mongodb.net/', {
+  mongoose.connect('mongodb+srv://bidland:123@user.te2zh0j.mongodb.net/?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
