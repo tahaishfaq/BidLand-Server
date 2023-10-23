@@ -58,7 +58,7 @@ const registerUser = async (req, res) => {
     });
 
     await user.save();
-    // sendConfirmationEmail(email);
+    sendConfirmationEmail(email);
 
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
@@ -100,6 +100,7 @@ const loginUser = async (req, res) => {
       token,
       expiresIn: expiresInMilliseconds,
       user: {
+        userId: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -133,20 +134,10 @@ const forgotPassword = async (req, res) => {
 };
 
 
-const generatePasswordResetToken = async (email) => {
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    throw new Error('User not found.');
-  }
-
-  const token = jwt.sign({ email }, 'HelloWorld', { expiresIn: '1h' });
-  return token;
-};
 
 
 const sendPasswordResetInstructions = async (email, resetToken) => {
-  const resetLink = `http://localhost:3000/reset/${resetToken}`;  // Adjust the reset link accordingly
+  const resetLink = `http://localhost:5173/resetpassword/${email}/${resetToken}`; // Adjust the reset link accordingly
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',  // SMTP server hostname
@@ -171,6 +162,16 @@ const sendPasswordResetInstructions = async (email, resetToken) => {
     }
   });
 };
+const generatePasswordResetToken = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error('User not found.');
+  }
+
+  const token = jwt.sign({ email }, 'HelloWorld', { expiresIn: '1h' });
+  return token;
+};
 
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
@@ -178,6 +179,9 @@ const resetPassword = async (req, res) => {
   try {
     // Verify the reset token
     const decoded = jwt.verify(token, 'HelloWorld');
+    if (decoded.email !== email) {
+      throw new Error('Invalid token');
+    }
     const { email } = decoded;
 
     // Hash the new password
@@ -207,10 +211,26 @@ const viewSellerProfile = async (req, res) => {
   }
 };
 
+const viewUserProfile = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId).select('-password');;
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 const getAllSellers = async (req, res) => {
   try {
     // Find all users with role "seller"
-    const sellers = await User.find({ role: 'seller' });
+    const sellers = await User.find({ role: 'seller' }, { password: 0 });
 
     res.json({ sellers });
   } catch (error) {
@@ -218,5 +238,39 @@ const getAllSellers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword , viewSellerProfile , getAllSellers};
+
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const updatedUserData = req.body;
+
+    if (updatedUserData.email || updatedUserData.username) {
+      // Check if the new email or username already exists (excluding the current user)
+      const existingUser = await User.findOne({
+        $or: [
+          { email: updatedUserData.email },
+          { username: updatedUserData.username },
+        ],
+        _id: { $ne: userId },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email or username already exists' });
+      }
+    }
+    // Update the user by their ID
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedUserData, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Respond with the updated user
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+module.exports = { registerUser, loginUser, forgotPassword, resetPassword , viewSellerProfile , getAllSellers, updateUser, viewUserProfile};
 

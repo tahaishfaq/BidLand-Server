@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
+const Bidding = require('./Bidding'); 
 
 const propertySchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
   fixedPrice: { type: Number },
   biddingPrice: { type: Number },
+  bids: [Bidding.schema],
+  isBidding: { type: Boolean, default: false },
+  biddingStartTime: { type: Date },
+  biddingEndTime: { type: Date },
   specifications: [String],
   reviews: [{ type: String }],
   comments: [{ type: String }],

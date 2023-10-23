@@ -3,6 +3,7 @@
   const mongoose = require('mongoose');
   const authRoutes = require('./routes/userRoute');
   const propertyRoutes = require('./routes/propertyRoute');
+  const biddingRoutes = require('./routes/biddingRoutes')
   const cors = require('cors');
   const app = express();
   app.use(cors());
@@ -20,7 +21,7 @@
   
   app.use('/auth', authRoutes);
   app.use('/property', propertyRoutes);
-
+  app.use('/bidding', biddingRoutes);
   
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
