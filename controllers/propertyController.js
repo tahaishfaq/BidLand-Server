@@ -176,6 +176,16 @@ const getUserProperties = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+const getBiddingProperties = async (req, res) => {
+  try {
+    const biddingProperties = await Property.find({ isBidding: true });
+
+    res.status(200).json(biddingProperties);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
   addProperty,
   viewProperties,
@@ -183,4 +193,5 @@ module.exports = {
   deleteProperty,
   viewProperty,
   getUserProperties,
+  getBiddingProperties
 };

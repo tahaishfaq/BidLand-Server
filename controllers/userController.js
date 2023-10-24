@@ -237,6 +237,17 @@ const getAllSellers = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const getAllUsers = async (req, res) => {
+  try {
+    // Find all users with role "seller"
+    const users = await User.find({ role: 'user' }, { password: 0 });
+
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 
 
 const updateUser = async (req, res) => {
@@ -272,5 +283,5 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword , viewSellerProfile , getAllSellers, updateUser, viewUserProfile};
+module.exports = { registerUser, loginUser, forgotPassword, resetPassword , viewSellerProfile , getAllSellers, updateUser, viewUserProfile, getAllUsers};
 
