@@ -1,5 +1,5 @@
 const express = require('express');
-const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers } = require('../controllers/userController');
+const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers, deleteUserAccount, updateUserPassword } = require('../controllers/userController');
 const { verifyToken, verifyRole } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -9,6 +9,9 @@ router.get('/seller/:userId',  viewSellerProfile);
 router.get('/user/:userId',  viewUserProfile);
 router.get('/get-all-sellers', getAllSellers);
 router.get('/get-all-users', getAllUsers);
+router.delete('/delete/:userId', deleteUserAccount);
+router.put('/update-password/:userId', updateUserPassword);
+
 
 
 router.get('/protected-route', verifyToken, (req, res) => {

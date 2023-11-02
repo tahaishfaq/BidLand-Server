@@ -186,6 +186,30 @@ const getBiddingProperties = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+const viewBids = async (req, res) => {
+  const { propertyId } = req.params;
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Check if the property is in bidding mode
+    if (!property.isBidding) {
+      return res.status(400).json({ message: 'Bidding is not active for this property.' });
+    }
+
+    // Extract bids from the property
+    const bids = property.bids;
+
+    res.status(200).json({ bids });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
   addProperty,
   viewProperties,
@@ -193,5 +217,6 @@ module.exports = {
   deleteProperty,
   viewProperty,
   getUserProperties,
-  getBiddingProperties
+  getBiddingProperties,
+  viewBids
 };

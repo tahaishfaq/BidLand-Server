@@ -1,35 +1,33 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User.js');
-const nodemailer = require('nodemailer');
-
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User.js");
+const nodemailer = require("nodemailer");
 
 const sendConfirmationEmail = (email) => {
   // Create a Nodemailer transporter using SMTP
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // SMTP server hostname
-    port: 587,                 // Port for secure SMTP (e.g., 587 for TLS)
-    secure: false,             // true for 465, false for other ports
+    host: "smtp.gmail.com", // SMTP server hostname
+    port: 587, // Port for secure SMTP (e.g., 587 for TLS)
+    secure: false, // true for 465, false for other ports
     auth: {
-      user: 'tahaishfaq71@@gmail.com',  // Your Gmail email
-      pass: 'wyfk chkk hsjh upvr'  // SMTP password (or app password for Gmail)
-    }
+      user: "tahaishfaq71@@gmail.com", // Your Gmail email
+      pass: "wyfk chkk hsjh upvr", // SMTP password (or app password for Gmail)
+    },
   });
 
   const mailOptions = {
-    from: 'admin@gmail.com',
+    from: "admin@gmail.com",
     to: email,
-    subject: 'Account Confirmation',
-    text: 'Thank you for registering. Please click the link to confirm your account.'
+    subject: "Account Confirmation",
+    text: "Thank you for registering. Please click the link to confirm your account.",
   };
 
   // Send the email
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('Error sending confirmation email:', error);
+      console.error("Error sending confirmation email:", error);
     } else {
-      console.log('Confirmation email sent:', info.response);
+      console.log("Confirmation email sent:", info.response);
     }
   });
 };
@@ -41,7 +39,11 @@ const registerUser = async (req, res) => {
     // Check if the email or username already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with the same email or username already exists' });
+      return res
+        .status(400)
+        .json({
+          message: "User with the same email or username already exists",
+        });
     }
 
     // Hash the password
@@ -53,16 +55,16 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      phone, 
-      profilePicture
+      phone,
+      profilePicture,
     });
 
     await user.save();
     sendConfirmationEmail(email);
 
-    res.status(201).json({ message: 'User registered successfully', user });
+    res.status(201).json({ message: "User registered successfully", user });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -72,12 +74,12 @@ const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
     const token = jwt.sign(
@@ -87,11 +89,11 @@ const loginUser = async (req, res) => {
         role: user.role,
         phone: user.phone,
         profilePicture: user.profilePicture,
-        rating: user.rating
+        rating: user.rating,
       },
-      'HelloWorld',
+      "HelloWorld",
       {
-        expiresIn: '24h'
+        expiresIn: "24h",
       }
     );
 
@@ -106,11 +108,11 @@ const loginUser = async (req, res) => {
         role: user.role,
         phone: user.phone,
         profilePicture: user.profilePicture,
-        rating: user.rating
-      }
+        rating: user.rating,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -121,7 +123,7 @@ const forgotPassword = async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(404).json({ message: 'User not found.' });
+    return res.status(404).json({ message: "User not found." });
   }
 
   // Generate a password reset token
@@ -130,35 +132,34 @@ const forgotPassword = async (req, res) => {
   // Send password reset instructions
   await sendPasswordResetInstructions(email, resetToken);
 
-  res.status(200).json({ message: 'Password reset instructions sent to your email.' });
+  res
+    .status(200)
+    .json({ message: "Password reset instructions sent to your email." });
 };
-
-
-
 
 const sendPasswordResetInstructions = async (email, resetToken) => {
   const resetLink = `http://localhost:5173/resetpassword/${email}/${resetToken}`; // Adjust the reset link accordingly
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',  // SMTP server hostname
-    port: 587,                 // Port for secure SMTP (e.g., 587 for TLS)
-    secure: false,             // true for 465, false for other ports
+    host: "smtp.gmail.com", // SMTP server hostname
+    port: 587, // Port for secure SMTP (e.g., 587 for TLS)
+    secure: false, // true for 465, false for other ports
     auth: {
-      user: 'tahaishfaq71@@gmail.com',  // Your Gmail email
-      pass: 'wyfk chkk hsjh upvr'  // SMTP password (or app password for Gmail)
-    }
+      user: "tahaishfaq71@@gmail.com", // Your Gmail email
+      pass: "wyfk chkk hsjh upvr", // SMTP password (or app password for Gmail)
+    },
   });
   const mailOptions = {
-    from: 'admin@gmail.com',
+    from: "admin@gmail.com",
     to: email,
-    subject: 'Password Reset Instructions',
-    html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`
+    subject: "Password Reset Instructions",
+    html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('Error sending confirmation email:', error);
+      console.error("Error sending confirmation email:", error);
     } else {
-      console.log('Confirmation email sent:', info.response);
+      console.log("Confirmation email sent:", info.response);
     }
   });
 };
@@ -166,10 +167,10 @@ const generatePasswordResetToken = async (email) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new Error('User not found.');
+    throw new Error("User not found.");
   }
 
-  const token = jwt.sign({ email }, 'HelloWorld', { expiresIn: '1h' });
+  const token = jwt.sign({ email }, "HelloWorld", { expiresIn: "1h" });
   return token;
 };
 
@@ -178,9 +179,9 @@ const resetPassword = async (req, res) => {
 
   try {
     // Verify the reset token
-    const decoded = jwt.verify(token, 'HelloWorld');
+    const decoded = jwt.verify(token, "HelloWorld");
     if (decoded.email !== email) {
-      throw new Error('Invalid token');
+      throw new Error("Invalid token");
     }
     const { email } = decoded;
 
@@ -190,24 +191,24 @@ const resetPassword = async (req, res) => {
     // Update the user's password
     await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
-    res.status(200).json({ message: 'Password updated successfully.' });
+    res.status(200).json({ message: "Password updated successfully." });
   } catch (error) {
-    res.status(400).json({ message: 'Invalid or expired reset token.' });
+    res.status(400).json({ message: "Invalid or expired reset token." });
   }
 };
 const viewSellerProfile = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const seller = await User.findById(userId).select('-password');;
+    const seller = await User.findById(userId).select("-password");
 
-    if (!seller || seller.role !== 'seller') {
-      return res.status(404).json({ message: 'Seller not found' });
+    if (!seller || seller.role !== "seller") {
+      return res.status(404).json({ message: "Seller not found" });
     }
 
     res.status(200).json({ seller });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -215,40 +216,38 @@ const viewUserProfile = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await User.findById(userId).select('-password');;
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({ user });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const getAllSellers = async (req, res) => {
   try {
     // Find all users with role "seller"
-    const sellers = await User.find({ role: 'seller' }, { password: 0 });
+    const sellers = await User.find({ role: "seller" }, { password: 0 });
 
     res.json({ sellers });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const getAllUsers = async (req, res) => {
   try {
     // Find all users with role "seller"
-    const users = await User.find({ role: 'user' }, { password: 0 });
+    const users = await User.find({ role: "user" }, { password: 0 });
 
     res.json({ users });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 const updateUser = async (req, res) => {
   try {
@@ -266,22 +265,86 @@ const updateUser = async (req, res) => {
       });
 
       if (existingUser) {
-        return res.status(400).json({ message: 'Email or username already exists' });
+        return res
+          .status(400)
+          .json({ message: "Email or username already exists" });
       }
     }
     // Update the user by their ID
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedUserData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedUserData, {
+      new: true,
+    });
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Respond with the updated user
     res.json(updatedUser);
   } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateUserPassword = async (req, res) => {
+  const userId  = req.params.userId; // Assuming you have userId in the JWT payload
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the current password matches the one in the database
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash the new password and update it in the database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteUserAccount = async (req, res) => {
+  const userId  = req.params.userId; // Assuming you have userId in the JWT payload
+
+  try {
+    const user = await User.findByIdAndRemove(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword , viewSellerProfile , getAllSellers, updateUser, viewUserProfile, getAllUsers};
 
+module.exports = {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  viewSellerProfile,
+  getAllSellers,
+  updateUser,
+  viewUserProfile,
+  getAllUsers,
+  updateUserPassword,
+  deleteUserAccount
+};

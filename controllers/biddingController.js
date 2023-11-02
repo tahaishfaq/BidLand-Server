@@ -1,5 +1,6 @@
 const Property = require('../models/Property');
 const Bidding = require('../models/Bidding')
+const User = require('../models/User')
 const startBidding = async (req, res) => {
   const { propertyId } = req.params;
 
@@ -14,14 +15,33 @@ const startBidding = async (req, res) => {
     }
 
     const currentTime = new Date();
-    const biddingDurationInMinutes = 7; // Adjust the bidding duration as needed
 
-    // Set bidding start time to current time
-    property.biddingStartTime = currentTime;
+    // Set the bidding start time to the current time in Pakistan local time format
+    property.biddingStartTime = currentTime.toLocaleString('en-US', {
+      timeZone: 'Asia/Karachi',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
 
-    // Calculate bidding end time by adding the bidding duration to current time
-    const biddingEndTime = new Date(currentTime.getTime() + biddingDurationInMinutes * 60000);
-    property.biddingEndTime = biddingEndTime;
+    // Calculate the bidding end time by adding 7 days in milliseconds to the current time
+    const biddingEndTime = currentTime.getTime() + 7 * 24 * 60 * 60 * 1000;
+
+    // Set the bidding end time in Pakistan local time format
+    property.biddingEndTime = new Date(biddingEndTime).toLocaleString('en-US', {
+      timeZone: 'Asia/Karachi',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
 
     property.isBidding = true;
     await property.save();
@@ -30,12 +50,13 @@ const startBidding = async (req, res) => {
       property,
       message: 'Bidding started for the property.',
       biddingStartTime: property.biddingStartTime,
-      biddingEndTime: property.biddingEndTime
+      biddingEndTime: property.biddingEndTime,
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
 
 const stopBidding = async (req, res) => {
   const { propertyId } = req.params;
@@ -66,15 +87,21 @@ const placeBid = async (req, res) => {
     const userId = req.user.userId;  // Corrected to req.user.userId
     const { biddingPrice } = req.body;
   
+    const user = await User.findById(userId).select('-password');
     try {
       if (req.user.role.toLowerCase() === 'user') {
         const bidding = new Bidding({
           propertyId,
           userId,
+          user,
           biddingPrice
         });
+        const property = await Property.findById(propertyId);
+        await property.bids.push(bidding);
         await bidding.save();
-        res.json({ bid: bidding, message: 'Bid placed successfully.' });
+        await property.save();
+
+        res.json({ bid: bidding, user: user, message: 'Bid placed successfully.' });
       } else {
         res.status(403).json({ message: 'Only users can place bids' });
       }
@@ -83,10 +110,7 @@ const placeBid = async (req, res) => {
     }
   };
   
-  module.exports = {
-    placeBid
-  };
-  
+
 module.exports = {
   startBidding,
   stopBidding,
