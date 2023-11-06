@@ -210,8 +210,43 @@ const viewBids = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+const writeReview = async (req, res) => {
+  const { propertyId } = req.params;
+  const { username, email, picture, reviewText, rating } = req.body; // Username, email, picture, review text, and rating
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Create a new review object
+    const newReview = {
+      username,
+      email,
+      picture,
+      reviewText,
+      rating,
+      // You can include more review-related data here
+    };
+
+    // Append the new review to the property's reviews array
+    property.reviews.push(newReview);
+
+    // Save the updated property with the new review
+    await property.save();
+
+    res.status(201).json({ ...newReview, message: 'Review added successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   addProperty,
+  writeReview,
   viewProperties,
   updateProperty,
   deleteProperty,

@@ -11,7 +11,30 @@ const propertySchema = new mongoose.Schema({
   biddingStartTime: { type: Date },
   biddingEndTime: { type: Date },
   specifications: [String],
-  reviews: [{ type: String }],
+  reviews: [
+      {
+        username: {
+          type: String,
+          required: true,
+        },
+        email: {
+          type: String,
+          required: true,
+        },
+        profilePicture: {
+          type: String,
+        },
+        reviewText: {
+          type: String,
+        },
+        rating: {
+          type: Number,
+          required: true,
+        },
+        // Add more fields related to reviews if needed
+      },
+    ],
+  
   comments: [{ type: String }],
   images: [{ type: String }], // Array of image URLs
   location: {

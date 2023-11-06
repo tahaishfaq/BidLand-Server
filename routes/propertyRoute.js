@@ -1,5 +1,5 @@
 const express = require('express');
-const { addProperty, viewProperties, updateProperty, deleteProperty, viewProperty, getUserProperties, getBiddingProperties, viewBids } = require('../controllers/propertyController');
+const { addProperty, viewProperties, updateProperty, deleteProperty, viewProperty, getUserProperties, getBiddingProperties, viewBids, writeReview } = require('../controllers/propertyController');
 const { verifyToken, verifyRole } = require('../middlewares/authMiddleware');
 const {allowSellerToUpdateProperty, allowSellerToDeleteProperty} = require("../middlewares/propertyMiddleware")
 const router = express.Router();
@@ -12,4 +12,5 @@ router.delete('/delete/:propertyId', verifyToken, allowSellerToDeleteProperty, d
 router.get('/:userId/properties', getUserProperties);
 router.get('/get-bidding-properties', getBiddingProperties);
 router.get('/bids/:propertyId', viewBids);
+router.post('/review/:propertyId', writeReview);
 module.exports = router;
