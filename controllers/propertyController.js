@@ -244,6 +244,24 @@ const writeReview = async (req, res) => {
   }
 };
 
+const viewPropertyReviews = async (req, res) => {
+  const { propertyId } = req.params;
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    const reviews = property.reviews;
+
+    res.status(200).json({ reviews });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   addProperty,
   writeReview,
@@ -253,5 +271,6 @@ module.exports = {
   viewProperty,
   getUserProperties,
   getBiddingProperties,
-  viewBids
+  viewBids,
+  viewPropertyReviews
 };
