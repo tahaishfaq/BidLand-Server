@@ -13,5 +13,4 @@ router.get('/:userId/properties', getUserProperties);
 router.get('/get-bidding-properties', getBiddingProperties);
 router.get('/bids/:propertyId', viewBids);
 router.post('/review/:propertyId', writeReview);
-router.get('/reviews/:propertyId', viewPropertyReviews);
 module.exports = router;
