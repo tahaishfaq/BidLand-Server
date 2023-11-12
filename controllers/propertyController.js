@@ -213,7 +213,7 @@ const viewBids = async (req, res) => {
 
 const writeReview = async (req, res) => {
   const { propertyId } = req.params;
-  const { username, email, picture, reviewText, rating } = req.body; // Username, email, picture, review text, and rating
+  const { username, email, profilePicture, reviewText, rating } = req.body; // Username, email, picture, review text, and rating
 
   try {
     const property = await Property.findById(propertyId);
@@ -226,7 +226,7 @@ const writeReview = async (req, res) => {
     const newReview = {
       username,
       email,
-      picture,
+      profilePicture,
       reviewText,
       rating,
       // You can include more review-related data here

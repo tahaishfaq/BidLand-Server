@@ -11,6 +11,7 @@ router.get('/get-all-sellers', getAllSellers);
 router.get('/get-all-users', getAllUsers);
 router.delete('/delete/:userId', deleteUserAccount);
 router.put('/update-password/:userId', updateUserPassword);
+router.post("/resetpassword/:id", resetPassword);
 
 
 
@@ -23,8 +24,6 @@ router.get('/admin-route', verifyToken, verifyRole(['admin']), (req, res) => {
 });
 router.post('/forgot-password', forgotPassword);
 
-// Reset password
-router.post('/reset-password', resetPassword);
 
 router.put('/user/:userId', updateUser)
 

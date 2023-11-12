@@ -119,26 +119,22 @@ const loginUser = async (req, res) => {
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  // Check if the email exists in the database
   const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(404).json({ message: "User not found." });
   }
-
-  // Generate a password reset token
-  const resetToken = await generatePasswordResetToken(email);
-
+  
   // Send password reset instructions
-  await sendPasswordResetInstructions(email, resetToken);
+  await sendPasswordResetInstructions(email, user._id);
 
   res
     .status(200)
     .json({ message: "Password reset instructions sent to your email." });
 };
 
-const sendPasswordResetInstructions = async (email, resetToken) => {
-  const resetLink = `http://localhost:5173/resetpassword/${email}/${resetToken}`; // Adjust the reset link accordingly
+const sendPasswordResetInstructions = async (email, id) => {
+  const resetLink = `http://localhost:5173/resetpassword/${id}`; // Adjust the reset link accordingly
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com", // SMTP server hostname
@@ -163,39 +159,44 @@ const sendPasswordResetInstructions = async (email, resetToken) => {
     }
   });
 };
-const generatePasswordResetToken = async (email) => {
-  const user = await User.findOne({ email });
+// const generatePasswordResetToken = async (email) => {
+//   const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new Error("User not found.");
-  }
+//   if (!user) {
+//     throw new Error("User not found.");
+//   }
 
-  const token = jwt.sign({ email }, "HelloWorld", { expiresIn: "1h" });
-  return token;
-};
+//   const token = jwt.sign({ email }, "HelloWorld", { expiresIn: "1h" });
+//   return token;
+// };
 
 const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
+  const { id } = req.params;
+  const { newPassword } = req.body;
 
   try {
-    // Verify the reset token
-    const decoded = jwt.verify(token, "HelloWorld");
-    if (decoded.email !== email) {
-      throw new Error("Invalid token");
+    // Find the user by id
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
-    const { email } = decoded;
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update the user's password
-    await User.findOneAndUpdate({ email }, { password: hashedPassword });
+    // Update the user's password with the hashed password
+    user.password = hashedPassword;
+    await user.save();
 
-    res.status(200).json({ message: "Password updated successfully." });
+    res.status(200).json({ message: "Password Reset successfully." });
   } catch (error) {
-    res.status(400).json({ message: "Invalid or expired reset token." });
+    console.error("Error Resetting Password:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
+
+
 const viewSellerProfile = async (req, res) => {
   const { userId } = req.params;
 

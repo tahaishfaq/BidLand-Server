@@ -12,6 +12,8 @@
   app.use(express.json());
   
   // Connect to MongoDB
+  //mongodb://bidland:123@ac-jkcaupi-shard-00-00.te2zh0j.mongodb.net:27017,ac-jkcaupi-shard-00-01.te2zh0j.mongodb.net:27017,ac-jkcaupi-shard-00-02.te2zh0j.mongodb.net:27017/?ssl=true&replicaSet=atlas-7mzh5y-shard-0&authSource=admin&retryWrites=true&w=majority
+  
   mongoose.connect('mongodb+srv://bidland:123@user.te2zh0j.mongodb.net/?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true
