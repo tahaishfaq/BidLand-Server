@@ -13,12 +13,14 @@ const addProperty = async (req, res) => {
     comments,
     images,
     location,
+    propertyType, 
+    city, 
   } = req.body;
 
-  const addedBy = req.user.userId; // Assuming you have userId in the JWT payload
+  const addedBy = req.user.userId; 
 
   try {
-    // Create a new property using the Property model
+    
     const property = new Property({
       name,
       description,
@@ -31,6 +33,8 @@ const addProperty = async (req, res) => {
       comments,
       images,
       location,
+      propertyType,
+      city,
       addedBy,
     });
 
@@ -55,6 +59,8 @@ const updateProperty = async (req, res) => {
     comments,
     images,
     location,
+    propertyType,
+    city,
   } = req.body;
 
   try {
@@ -72,6 +78,8 @@ const updateProperty = async (req, res) => {
           comments,
           images,
           location,
+          propertyType,
+          city,
         },
         { new: true }
       );
@@ -183,7 +191,7 @@ const getBiddingProperties = async (req, res) => {
 
     res.status(200).json(biddingProperties);
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -194,12 +202,14 @@ const viewBids = async (req, res) => {
     const property = await Property.findById(propertyId);
 
     if (!property) {
-      return res.status(404).json({ message: 'Property not found.' });
+      return res.status(404).json({ message: "Property not found." });
     }
 
     // Check if the property is in bidding mode
     if (!property.isBidding) {
-      return res.status(400).json({ message: 'Bidding is not active for this property.' });
+      return res
+        .status(400)
+        .json({ message: "Bidding is not active for this property." });
     }
 
     // Extract bids from the property
@@ -207,19 +217,30 @@ const viewBids = async (req, res) => {
 
     res.status(200).json({ bids });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const writeReview = async (req, res) => {
   const { propertyId } = req.params;
-  const { username, email, profilePicture, reviewText, rating } = req.body; // Username, email, picture, review text, and rating
+  const { username, email, profilePicture, reviewText, rating } = req.body;
 
   try {
     const property = await Property.findById(propertyId);
 
     if (!property) {
-      return res.status(404).json({ message: 'Property not found.' });
+      return res.status(404).json({ message: "Property not found." });
+    }
+
+    // Check if the user has already submitted a review for this property
+    const existingReview = property.reviews.find(
+      (review) => review.email === email
+    );
+
+    if (existingReview) {
+      return res
+        .status(400)
+        .json({ message: "You have already submitted a review for this property." });
     }
 
     // Create a new review object
@@ -229,21 +250,74 @@ const writeReview = async (req, res) => {
       profilePicture,
       reviewText,
       rating,
-      // You can include more review-related data here
     };
 
     // Append the new review to the property's reviews array
     property.reviews.push(newReview);
 
-    // Save the updated property with the new review
     await property.save();
 
-    res.status(201).json({ ...newReview, message: 'Review added successfully' });
+    res
+      .status(201)
+      .json({ ...newReview, message: "Review added successfully" });
   } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+const filterByPropertyType = async (req, res) => {
+  try {
+    const { propertyType } = req.query;
+
+    if (!propertyType) {
+      return res.status(400).json({ message: 'Property type is required.' });
+    }
+
+    const filteredProperties = await Property.find({ propertyType: propertyType });
+
+    res.status(200).json(filteredProperties);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
+const filterByPropertyCity = async (req, res) => {
+  try {
+    const { city} = req.query;
+
+    if (!city) {
+      return res.status(400).json({ message: 'Property type is required.' });
+    }
+
+    const filteredProperties = await Property.find({ city: city });
+
+    res.status(200).json(filteredProperties);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const filterByPriceRange = async (req, res) => {
+  try {
+    const { minPrice, maxPrice } = req.query;
+
+    if (!minPrice || !maxPrice) {
+      return res.status(400).json({ message: 'Both minPrice and maxPrice are required.' });
+    }
+
+    const filteredProperties = await Property.find({
+      fixedPrice: { $gt: minPrice, $lt: maxPrice },
+    });
+
+    res.status(200).json(filteredProperties);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 module.exports = {
   addProperty,
@@ -255,4 +329,7 @@ module.exports = {
   getUserProperties,
   getBiddingProperties,
   viewBids,
+  filterByPropertyType,
+  filterByPropertyCity,
+  filterByPriceRange,
 };

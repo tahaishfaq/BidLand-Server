@@ -19,7 +19,7 @@ const sendConfirmationEmail = (email) => {
     from: "admin@gmail.com",
     to: email,
     subject: "Account Confirmation",
-    text: "Thank you for registering. Please click the link to confirm your account.",
+    text: "Thank you for registering",
   };
 
   // Send the email

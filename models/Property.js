@@ -4,7 +4,7 @@ const Bidding = require('./Bidding');
 const propertySchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
-  fixedPrice: { type: Number },
+  fixedPrice: { type: Number, required: true  },
   biddingPrice: { type: Number },
   bids: [Bidding.schema],
   isBidding: { type: Boolean, default: false },
@@ -51,6 +51,8 @@ const propertySchema = new mongoose.Schema({
     },
     address: { type: String }
   },
+  city: { type: String, required: true },
+  propertyType: { type: String, required: true },
   addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
