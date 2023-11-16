@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.js");
 const nodemailer = require("nodemailer");
+const Property = require('../models/Property');
 
 const sendConfirmationEmail = (email) => {
   // Create a Nodemailer transporter using SMTP
@@ -397,6 +398,36 @@ const manageVerificationRequest = async (req, res) => {
   }
 };
 
+const getPropertyReports = async (req, res) => {
+  try {
+    const propertiesWithReports = await Property.find({ reports: { $exists: true, $not: { $size: 0 } } });
+    res.status(200).json(propertiesWithReports);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const getReportsByPropertyId = async (req, res) => {
+  const { propertyId } = req.params;
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found' });
+    }
+
+    if (!property.reports || property.reports.length === 0) {
+      return res.status(200).json({ message: 'No reports found for this property', property });
+    }
+
+    res.status(200).json({ reports: property.reports, property });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
@@ -411,4 +442,6 @@ module.exports = {
   deleteUserAccount,
   VerificationProfile,
   manageVerificationRequest,
+  getPropertyReports,
+  getReportsByPropertyId,
 };

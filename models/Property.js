@@ -34,7 +34,14 @@ const propertySchema = new mongoose.Schema({
         // Add more fields related to reviews if needed
       },
     ],
-  
+    reports: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        feedbackMessage: { type: String, },
+        feedbackReason: { type: String,  },
+        timestamp: { type: Date, default: Date.now },
+      }
+    ],
   comments: [{ type: String }],
   images: [{ type: String }], // Array of image URLs
   location: {
@@ -51,8 +58,8 @@ const propertySchema = new mongoose.Schema({
     },
     address: { type: String }
   },
-  city: { type: String, required: true },
-  propertyType: { type: String, required: true },
+  city: { type: String, },
+  propertyType: { type: String,},
   addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 

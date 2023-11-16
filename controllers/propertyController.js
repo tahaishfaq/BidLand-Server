@@ -319,6 +319,45 @@ const filterByPriceRange = async (req, res) => {
   }
 };
 
+const addReport = async (req, res) => {
+  const { propertyId } = req.params;
+  const { feedbackMessage, feedbackReason } = req.body;
+  const userId = req.user.userId; 
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Check if the user has already reported this property
+    const existingReport = property.reports.find(report => report.user.equals(userId));
+
+    if (existingReport) {
+      return res.status(400).json({ message: 'You have already reported this property.' });
+    }
+
+    // Create a new report object
+    const newReport = {
+      user: userId,
+      feedbackMessage,
+      feedbackReason,
+    };
+
+    // Append the new report to the property's reports array
+    property.reports.push(newReport);
+
+    // Save the updated property with the new report
+    await property.save();
+
+    res.status(201).json({ message: 'Report added successfully', report: newReport });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   addProperty,
   writeReview,
@@ -332,4 +371,5 @@ module.exports = {
   filterByPropertyType,
   filterByPropertyCity,
   filterByPriceRange,
+  addReport,
 };
