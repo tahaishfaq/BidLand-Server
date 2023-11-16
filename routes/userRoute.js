@@ -1,6 +1,6 @@
 const express = require('express');
-const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers, deleteUserAccount, updateUserPassword } = require('../controllers/userController');
-const { verifyToken, verifyRole } = require('../middlewares/authMiddleware');
+const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers, deleteUserAccount, updateUserPassword, VerificationProfile, manageVerificationRequest } = require('../controllers/userController');
+const { verifyToken, verifyRole, authenticateAdmin } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 router.post('/login', loginUser);
@@ -12,7 +12,8 @@ router.get('/get-all-users', getAllUsers);
 router.delete('/delete/:userId', deleteUserAccount);
 router.put('/update-password/:userId', updateUserPassword);
 router.post("/resetpassword/:id", resetPassword);
-
+router.post('/verify-profile/:userId',  VerificationProfile);
+router.post('/manage-verification', authenticateAdmin, manageVerificationRequest);
 
 
 router.get('/protected-route', verifyToken, (req, res) => {

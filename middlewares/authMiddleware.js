@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
+const User = require('../models/User');
 
 const verifyToken = (req, res, next) => {
   const token = req.header('Authorization');
@@ -24,4 +24,27 @@ const verifyRole = (roles) => {
   };
 };
 
-module.exports = { verifyToken, verifyRole };
+const authenticateAdmin = async (req, res, next) => {
+  const token = req.header('Authorization');
+
+  if (!token) {
+    return res.status(401).json({ message: 'Authorization token is required.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token.split(" ")[1], 'HelloWorld');
+
+    const user = await User.findOne({ _id: decoded.userId });
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin authorization required.' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token.' });
+  }
+};
+
+module.exports = { verifyToken, verifyRole, authenticateAdmin };

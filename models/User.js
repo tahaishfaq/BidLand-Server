@@ -14,6 +14,15 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'seller', 'admin'],
     default: 'user',
   },
+  verification: {
+    status: { type: String, enum: ['Requested', 'Approved', 'Rejected'], default: 'Requested' },
+    isVerified: { type: Boolean, default: false },
+    cnicFront: { type: String }, 
+    cnicBack: { type: String },  
+    reason: {
+      type: String,
+    },
+  },
   profilePicture: String, 
   rating: {
     type: Number,

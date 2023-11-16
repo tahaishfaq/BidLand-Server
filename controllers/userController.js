@@ -39,11 +39,9 @@ const registerUser = async (req, res) => {
     // Check if the email or username already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({
-          message: "User with the same email or username already exists",
-        });
+      return res.status(400).json({
+        message: "User with the same email or username already exists",
+      });
     }
 
     // Hash the password
@@ -124,7 +122,7 @@ const forgotPassword = async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User not found." });
   }
-  
+
   // Send password reset instructions
   await sendPasswordResetInstructions(email, user._id);
 
@@ -195,7 +193,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
-
 
 const viewSellerProfile = async (req, res) => {
   const { userId } = req.params;
@@ -288,7 +285,7 @@ const updateUser = async (req, res) => {
 };
 
 const updateUserPassword = async (req, res) => {
-  const userId  = req.params.userId; // Assuming you have userId in the JWT payload
+  const userId = req.params.userId; // Assuming you have userId in the JWT payload
   const { currentPassword, newPassword } = req.body;
 
   try {
@@ -320,21 +317,85 @@ const updateUserPassword = async (req, res) => {
 };
 
 const deleteUserAccount = async (req, res) => {
-  const userId  = req.params.userId; // Assuming you have userId in the JWT payload
+  const userId = req.params.userId; // Assuming you have userId in the JWT payload
 
   try {
     const user = await User.findByIdAndRemove(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'Account deleted successfully' });
+    res.json({ message: "Account deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
+const VerificationProfile = async (req, res) => {
+  try {
+    const userId = req.params.userId; // Assuming you have userId in the JWT payload
+    const { cnicFront, cnicBack } = req.body;
+
+    if (!cnicFront || !cnicBack) {
+      return res
+        .status(400)
+        .json({ message: "Both CNIC front and back images are required." });
+    }
+
+    // Update the user's verification status
+    await User.findByIdAndUpdate(userId, {
+      "verification.status": "Requested",
+      "verification.cnicFront": cnicFront, // Store the string or data
+      "verification.cnicBack": cnicBack, // Store the string or data
+    });
+
+    res.json({ message: "CNIC verification requested successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const manageVerificationRequest = async (req, res) => {
+  const { userId, status, reason } = req.body;
+
+  try {
+    if (req.user.role.toLowerCase() !== "admin") {
+      return res
+        .status(403)
+        .json({
+          message: "Permission denied. Only admins can manage verifications.",
+        });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.verification.status = status;
+    if (status === "Approved") {
+      user.verification.isVerified = true;
+    } else if (status === "Rejected") {
+      user.verification.isVerified = false;
+      user.verification.reason = reason;
+    }
+
+    await user.save();
+
+    res
+      .status(200)
+      .json({
+        message: `User verification ${status.toLowerCase()}.`,
+        user,
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
 
 module.exports = {
   registerUser,
@@ -347,5 +408,7 @@ module.exports = {
   viewUserProfile,
   getAllUsers,
   updateUserPassword,
-  deleteUserAccount
+  deleteUserAccount,
+  VerificationProfile,
+  manageVerificationRequest,
 };
