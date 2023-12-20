@@ -108,6 +108,7 @@ const loginUser = async (req, res) => {
         phone: user.phone,
         profilePicture: user.profilePicture,
         rating: user.rating,
+        verification: user.verification,
       },
     });
   } catch (error) {

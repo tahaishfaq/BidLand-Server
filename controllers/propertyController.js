@@ -1,5 +1,6 @@
 const Property = require("../models/Property");
 const User = require("../models/User");
+const stripe = require('stripe')('sk_test_51NO5Z9COYbX4EEUkbG0REHY3UBcqDZZj7zMyETaQbhrvqjtv3Rqj8UQxB5rO5teHzhB4wF4pibfpZL7pMb0RfOyw00MN9vowJH');
 const addProperty = async (req, res) => {
   const {
     name,
@@ -358,6 +359,58 @@ const addReport = async (req, res) => {
   }
 };
 
+const createCheckoutSession = async (req, res) => {
+  const { propertyId, name, fixedPrice } = req.body;
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // You can customize the line items based on your requirements
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd', // Replace with your desired currency
+            product_data: {
+              name: name, // Property name
+            },
+            unit_amount: fixedPrice * 100, // Convert to cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: 'http://localhost:5173/success', // Replace with your success URL
+      cancel_url: 'http://localhost:5173/cancel', // Replace with your cancel URL
+    });
+
+    res.status(200).json({ sessionId: session.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+const fetchPayments = async (req, res) => {
+  try {
+    // Fetch payments using the Stripe API
+    const payments = await stripe.paymentIntents.list();
+
+    // Respond with the list of payments
+    res.status(200).json({ payments: payments.data });
+  } catch (error) {
+    console.error('Error fetching payments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 module.exports = {
   addProperty,
   writeReview,
@@ -372,4 +425,6 @@ module.exports = {
   filterByPropertyCity,
   filterByPriceRange,
   addReport,
+  createCheckoutSession,
+  fetchPayments
 };

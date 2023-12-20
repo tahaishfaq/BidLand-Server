@@ -1,5 +1,5 @@
 const express = require('express');
-const { addProperty, viewProperties, updateProperty, deleteProperty, viewProperty, getUserProperties, getBiddingProperties, viewBids, writeReview, viewPropertyReviews, filterByPriceRange, filterByPropertyCity, filterByPropertyType, addReport } = require('../controllers/propertyController');
+const { addProperty, viewProperties, updateProperty, deleteProperty, viewProperty, getUserProperties, getBiddingProperties, viewBids, writeReview, viewPropertyReviews, filterByPriceRange, filterByPropertyCity, filterByPropertyType, addReport, createCheckoutSession, fetchPayments } = require('../controllers/propertyController');
 const { verifyToken, verifyRole, authenticateUser } = require('../middlewares/authMiddleware');
 const {allowSellerToUpdateProperty, allowSellerToDeleteProperty} = require("../middlewares/propertyMiddleware")
 const router = express.Router();
@@ -17,4 +17,7 @@ router.get('/filterByPropertyType', filterByPropertyType);
 router.get('/filterByPropertyCity', filterByPropertyCity);
 router.get('/filterByPriceRange', filterByPriceRange);
 router.post('/report/:propertyId', verifyToken, addReport);
+router.post('/create-checkout-session', createCheckoutSession);
+router.get('/fetch-payments', fetchPayments);
+
 module.exports = router;
