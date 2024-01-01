@@ -103,7 +103,7 @@ const deleteProperty = async (req, res) => {
 
   try {
     // Check if the user has permission to delete the property (seller)
-    if (req.user.role.toLowerCase() === "seller") {
+    if (req.user.role.toLowerCase() === "seller" || req.user.role.toLowerCase() === "admin") {
       const deletedProperty = await Property.findByIdAndDelete(propertyId);
 
       if (!deletedProperty) {
@@ -375,7 +375,7 @@ const createCheckoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd', // Replace with your desired currency
+            currency: 'Pkr', // Replace with your desired currency
             product_data: {
               name: name, // Property name
             },
