@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Bidding = require('./Bidding'); 
+const querySchema = require('./Query');
 
 const propertySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -7,10 +8,13 @@ const propertySchema = new mongoose.Schema({
   fixedPrice: { type: Number, required: true  },
   biddingPrice: { type: Number },
   bids: [Bidding.schema],
+  winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Track the winner
+  isBiddingWinnerDeclared: { type: Boolean, default: false },
   isBidding: { type: Boolean, default: false },
   biddingStartTime: { type: Date },
   biddingEndTime: { type: Date },
   specifications: [String],
+  queries: [querySchema], 
   reviews: [
       {
         username: {

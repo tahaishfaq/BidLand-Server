@@ -44,6 +44,8 @@ const startBidding = async (req, res) => {
     });
 
     property.isBidding = true;
+    property.winner = null;
+    property.isBiddingWinnerDeclared = false;
     await property.save();
 
     res.json({

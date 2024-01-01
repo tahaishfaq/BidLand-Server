@@ -410,6 +410,138 @@ const fetchPayments = async (req, res) => {
   }
 };
 
+const winBid = async (req, res) => {
+  const { propertyId, bidId, winnerUserId } = req.body;
+
+  try {
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Check if a winner is already declared for the property
+    if (property.isBiddingWinnerDeclared) {
+      return res.status(400).json({ message: 'Winner already declared for this property.' });
+    }
+
+    const bid = property.bids.id(bidId);
+
+      if (!bid) {
+        return res.status(404).json({ message: 'Bid not found.' });
+      }
+
+      // Update the bid with win information
+      bid.winInfo = {
+        winnerUserId,
+        timestamp: new Date(),
+      };
+
+    // Update the winner and winning price
+    property.winner = winnerUserId;
+    property.isBiddingWinnerDeclared = true;
+    property.isBidding = false;
+    property.biddingStartTime = null;
+    property.biddingEndTime = null;
+
+    await property.save();
+
+    // Optionally, you can update the bid status or perform other actions
+
+    res.status(200).json({ message: 'Winner declared successfully.', property });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+const getPropertyQueries = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Check if the logged-in user is the seller of the property
+    // if (property.addedBy.toString() !== req.user.userId) {
+    //   return res.status(403).json({ message: 'You are not authorized to view queries for this property.' });
+    // }
+
+    // Retrieve and send property queries to the seller
+    const queries = property.queries || [];
+    res.json({ queries });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const addPropertyQuery = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { userDetails, queryText } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Add the new query to the property
+    const newQuery = {
+      userId: req.user.userId,
+      userDetails,
+      queryText,
+      timestamp: new Date(),
+    };
+
+    property.queries = property.queries || [];
+    property.queries.push(newQuery);
+
+    await property.save();
+
+    res.status(201).json({ message: 'Query added successfully', query: newQuery });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const replyToQuery = async (req, res) => {
+  try {
+    const { queryId } = req.params;
+    const { propertyId, replyText } = req.body;
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: 'Property not found.' });
+    }
+
+    // Check if the logged-in user is the seller of the property
+    
+
+    // Find the query to which the seller is replying
+    const query = property.queries.find(q => q._id.toString() === queryId);
+    if (!query) {
+      return res.status(404).json({ message: 'Query not found.' });
+    }
+
+    // Add the reply to the query
+    query.replyText = replyText;
+    query.replyTimestamp = new Date();
+
+    await property.save();
+
+    res.json({ message: 'Reply added successfully', query });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
   addProperty,
@@ -426,5 +558,9 @@ module.exports = {
   filterByPriceRange,
   addReport,
   createCheckoutSession,
-  fetchPayments
+  fetchPayments,
+  winBid,
+  getPropertyQueries,
+  addPropertyQuery,
+  replyToQuery,
 };
