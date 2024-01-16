@@ -32,7 +32,13 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: true,
-  }
+  },
+  favorites: [
+    {
+      property: { type: mongoose.Schema.Types.ObjectId, ref: 'Property' },
+      addedAt: { type: Date, default: Date.now },
+    }
+  ],
 });
 
 module.exports = mongoose.model('User', userSchema);

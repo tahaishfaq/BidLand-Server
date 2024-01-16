@@ -1,5 +1,5 @@
 const express = require('express');
-const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers, deleteUserAccount, updateUserPassword, VerificationProfile, manageVerificationRequest, getPropertyReports, getReportsByPropertyId } = require('../controllers/userController');
+const { loginUser, registerUser, viewSellerProfile, forgotPassword, resetPassword, getAllSellers, updateUser, viewUserProfile, getAllUsers, deleteUserAccount, updateUserPassword, VerificationProfile, manageVerificationRequest, getPropertyReports, getReportsByPropertyId, addToFavorites, removeFromFavorites, getFavoriteProperties } = require('../controllers/userController');
 const { verifyToken, verifyRole, authenticateAdmin } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.post('/verify-profile/:userId',  VerificationProfile);
 router.post('/manage-verification', authenticateAdmin, manageVerificationRequest);
 router.get('/properties/reports', authenticateAdmin, getPropertyReports);
 router.get('/properties/reports/:propertyId', authenticateAdmin, getReportsByPropertyId);
+
 
 router.get('/protected-route', verifyToken, (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user });

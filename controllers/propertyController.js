@@ -375,11 +375,11 @@ const createCheckoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'Pkr', // Replace with your desired currency
+            currency: 'usd', // Replace with your desired currency
             product_data: {
               name: name, // Property name
             },
-            unit_amount: fixedPrice * 100, // Convert to cents
+            unit_amount: fixedPrice / 100, // Convert to cents
           },
           quantity: 1,
         },
